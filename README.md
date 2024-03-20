@@ -1,10 +1,8 @@
 # DINCAE-benthic-traits
 
-Neural network to generate maps of benthic traits using [DINCAE](https://github.com/gher-uliege/DINCAE.jl)
+Neural network to generate maps of benthic traits using [DINCAE](https://github.com/gher-uliege/DINCAE.jl) (Data-Interpolating Convolutional Auto-Encoder).
 
-
-🚧 🚧 **work-in progress** 🚧 🚧
-
+🚧 🚧 **This is work in-progress** 🚧 🚧
 
 DINCAE is intended to be used with a [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) with [CUDA](https://en.wikipedia.org/wiki/CUDA) support (NVIDIA GPU). The code can also run on a [CPU](https://en.wikipedia.org/wiki/Central_processing_unit) but which will be quite slow.
 
