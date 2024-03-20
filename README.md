@@ -9,4 +9,4 @@ Neural network to generate maps of benthic traits
 ## List of dependencies
 
 * julia 1.9 or later
-* all other dependencies are listed in [Project.toml](blob/main/Project.toml)
+* all other dependencies are listed in [Project.toml](https://github.com/neccton-algo/DINCAE-benthic-traits/blob/main/Project.toml)
