@@ -9,5 +9,5 @@ DINCAE is intended to be used with a [GPU](https://en.wikipedia.org/wiki/Graphic
 
 ## List of dependencies
 
-* julia 1.9 or later
-* all other dependencies are listed in [Project.toml](https://github.com/neccton-algo/DINCAE-benthic-traits/blob/main/Project.toml)
+* The [Julia](https://julialang.org/downloads/) programming language version 1.9 or later
+* All other dependencies are listed in [Project.toml](https://github.com/neccton-algo/DINCAE-benthic-traits/blob/main/Project.toml). They are installed automatically by the [julia package manager](https://pkgdocs.julialang.org/v1/environments/) as described in the installation section.
