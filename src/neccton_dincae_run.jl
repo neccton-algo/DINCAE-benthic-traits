@@ -1,5 +1,8 @@
 # Execute DINCAE
 
+
+using Pkg; Pkg.activate("/home/abarth/src/DINCAE-benthic-traits")
+
 using Dates
 using DINCAE
 using LinearAlgebra
@@ -8,7 +11,6 @@ using Printf
 using Random
 using DIVAnd
 using CUDA
-#using DINCAE_altimetry
 using Glob
 using JSON3
 using DataStructures
@@ -18,8 +20,6 @@ include("neccton_common.jl")
 
 
 T = Float32
-
-
 
 bathname = expanduser("~/Data/DivaData/Global/gebco_30sec_4.nc")
 bathisglobal = true
@@ -34,11 +34,8 @@ if !isfile(maskname)
 end
 
 batch_size = 1;
-
-
 Δlon = dlon
 Δlat = dlat
-
 lonr = gridlon
 latr = gridlat
 
@@ -134,11 +131,15 @@ end
 
 
 cd(joinpath(dirname(pathof(DINCAE)),"..")) do
-    write("$outdir/DINCAE.commit", read(`git rev-parse HEAD`))
-    write("$outdir/DINCAE.diff", read(`git diff`))
+    if isdir(".git")
+        write("$outdir/DINCAE.commit", read(`git rev-parse HEAD`))
+        write("$outdir/DINCAE.diff", read(`git diff`))
+    end
 end;
 
-cp(@__FILE__,joinpath(outdir,basename(@__FILE__)),force=true)
+if isfile(@__FILE__)
+    cp(@__FILE__,joinpath(outdir,basename(@__FILE__)),force=true)
+end
 
 # function cvrms(fname_rec)
 #     varname = "sla"
