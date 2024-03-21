@@ -4,7 +4,6 @@
 using CSV
 using DataFrames
 using PyPlot, Statistics
-using OceanPlot
 using Interpolations
 using Glob
 using JSON3
@@ -36,8 +35,8 @@ function plmap(cl;orientation = "horizontal")
     clim(cl)
     colorbar(orientation=orientation);
     xlim(gridlon[[1,end]]); ylim(gridlat[[1,end]])
-    OceanPlot.plotmap();
-    OceanPlot.set_aspect_ratio()
+    plotmap();
+    set_aspect_ratio()
 end
 
 include("neccton_common.jl")

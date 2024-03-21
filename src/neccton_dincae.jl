@@ -229,8 +229,8 @@ function plmap(;orientation = "horizontal")
     clim(cl)
     colorbar(orientation=orientation);
     xlim(gridlon[[1,end]]); ylim(gridlat[[1,end]])
-    OceanPlot.plotmap();
-    OceanPlot.set_aspect_ratio()
+    plotmap();
+    set_aspect_ratio()
 end
 
 #=

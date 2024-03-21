@@ -1,6 +1,4 @@
 # Execute DINCAE
-
-
 using Pkg; Pkg.activate("/home/abarth/src/DINCAE-benthic-traits")
 
 using Dates
