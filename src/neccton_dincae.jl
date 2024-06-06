@@ -88,7 +88,7 @@ for n in names(df)
 end
 =#
 
-moddir = "/home/abarth/Data/NECCTON/PourSeverine"
+moddir = expanduser("~/Data/NECCTON/PourSeverine")
 fnames0 = sort(glob("Cl*_1d_*_*_btrc_T_*-*.nc",moddir))
 
 fnames = sort(glob("Cl1992_1d_*_*_grid_T_*-*.nc",moddir))

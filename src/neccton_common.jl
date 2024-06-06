@@ -20,7 +20,7 @@ auxdir = joinpath(basedir,"Auxdata_$(1/dlon)")
 split_fname = joinpath(basedir,"split.nc")
 
 moddir = joinpath(basedir,"PourSeverine")
-moddir = "/home/abarth/Data/NECCTON/PourSeverine"
+moddir = expanduser("~/Data/NECCTON/PourSeverine")
 
 station_fname = joinpath(datadir,"Stations","stations.csv")
 CWM_response_fname = joinpath(datadir,"Community Weighted Mean (sites x traits)","CWM_response.csv")
