@@ -44,8 +44,7 @@ include("neccton_common.jl")
 
 
 station_fname = joinpath(datadir,"Stations","stations.csv")
-
-CWM_response_fname = joinpath(datadir,"Community Weighted Mean (sites x traits)","CWM_response.csv")
+CWM_response_fname = joinpath(datadir,"CWM_SxT","CWM_response.csv")
 env_matrix_fname = joinpath(datadir,"Environnement","matrice environnement.txt")
 
 
