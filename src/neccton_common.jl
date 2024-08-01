@@ -127,7 +127,7 @@ end
 
 
 
-function plotmap(bathname = joinpath(ENV["HOME"],"projects","Julia","DIVAnd-example-data","Global","Bathymetry","gebco_30sec_4.nc");
+function plotmap(bathname = expanduser("~/Data/DivaData/Global/gebco_30sec_4.nc");
                   patchcolor = [.8,.8,.8], coastlinecolor = nothing)
 
     xl = xlim()
