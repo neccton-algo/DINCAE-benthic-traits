@@ -135,7 +135,7 @@ pcolormesh(lon1,lat1,std_sbtemper',cmap="jet")
 #pcolormesh(lon1,lat1,mean(sbtemper,dims=3)[:,:,1]'); colorbar()
 
 
-
+#split between validation and training dataset
 
 split_fname = joinpath(basedir,"split.nc")
 
