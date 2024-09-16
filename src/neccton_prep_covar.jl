@@ -71,17 +71,15 @@ std_DOX = std(DOX,dims=3)[:,:,1]
 save(mean_sbtemper,"mean_sbtemper")
 save(std_sbtemper,"std_sbtemper")
 
+# process DOC
 
 save(mean_DOX,"mean_DOX")
 save(std_DOX,"std_DOX")
 save(low_DOX,"low_DOX")
 
-DOX = nothing
-GC.gc()
+# process PAR
 
 PAR = nomissing(ds_Btrc["PAR"][:,:,:],NaN)
-#PAR_min = nomissing(ds_Btrc["PAR_min"][:,:,:],NaN)
-
 mean_PAR = mean(PAR,dims=3)[:,:,1]
 std_PAR = std(PAR,dims=3)[:,:,1]
 
