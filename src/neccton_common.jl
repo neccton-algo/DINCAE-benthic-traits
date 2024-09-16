@@ -13,17 +13,18 @@ gridlat = 41.8:dlat:46.8
 
 # File location
 basedir = expanduser("~/Data/NECCTON")
-datadir = joinpath(basedir,"General","Datasets")
-auxdir = joinpath(basedir,"Auxdata_$(1/dlon)")
+datadir = joinpath(basedir,"dataset_Severine","Datasets")
+auxdir = joinpath(basedir,"dataset_Severine","Auxdata_$(1/dlon)")
 
 
-split_fname = joinpath(basedir,"split.nc")
+split_fname = joinpath(basedir,"dataset_Severine","split.nc")
 
 moddir = joinpath(basedir,"PourSeverine")
-moddir = expanduser("~/Data/NECCTON/PourSeverine")
+#moddir = expanduser("~/Data/NECCTON/PourSeverine")
 
 station_fname = joinpath(datadir,"Stations","stations.csv")
-CWM_response_fname = joinpath(datadir,"Community Weighted Mean (sites x traits)","CWM_response.csv")
+#                            (datadir, Community_weighted_matrix (site x traits), "CWM_response.csv")
+CWM_response_fname = joinpath(datadir,"CWM_SxT","CWM_response.csv")
 env_matrix_fname = joinpath(datadir,"Environnement","matrice environnement.txt")
 
 
@@ -127,7 +128,7 @@ end
 
 
 
-function plotmap(bathname = joinpath(ENV["HOME"],"projects","Julia","DIVAnd-example-data","Global","Bathymetry","gebco_30sec_4.nc");
+function plotmap(bathname = expanduser("~/Data/DivaData/Global/gebco_30sec_4.nc");
                   patchcolor = [.8,.8,.8], coastlinecolor = nothing)
 
     xl = xlim()
