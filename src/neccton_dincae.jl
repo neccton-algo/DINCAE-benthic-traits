@@ -136,6 +136,7 @@ pcolormesh(lon1,lat1,std_sbtemper',cmap="jet")
 
 
 
+# split between training and validation dataset
 
 split_fname = joinpath(basedir,"split.nc")
 
