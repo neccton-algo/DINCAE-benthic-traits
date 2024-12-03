@@ -16,7 +16,6 @@ using Statistics
 using Dates
 using DataStructures
 
-<<<<<<< HEAD
                                         # Include("common.jl")
 
 include("neccton_common.jl")
@@ -30,8 +29,6 @@ include("neccton_common.jl")
 
                                             # Saving dataset function
 
-=======
->>>>>>> e3b3e2dcdbf60b0480d69460544900c10dfe4609
 function savedata(values,lon,lat,time,id,udates,varname,outname)
     len = length.(values);
     values = reduce(vcat,values);
@@ -53,7 +50,6 @@ function savedata(values,lon,lat,time,id,udates,varname,outname)
     defVar(ds,"dtime",time,("time",), attrib = OrderedDict(
         "long_name" => "time of measurement"))
 
-<<<<<<< HEAD
     close(ds);
 end
 
@@ -63,57 +59,22 @@ end
 
 
 df, resp, station = df_load(station_fname,CWM_response_fname);
-=======
-    close(ds)
-end
-
-include("neccton_common.jl")
-
-
-station_fname = joinpath(datadir,"Stations","stations.csv")
-CWM_response_fname = joinpath(datadir,"CWM_SxT","CWM_response.csv")
-env_matrix_fname = joinpath(datadir,"Environnement","matrice environnement.txt")
-
-
-#--
-
-
-station = CSV.read(station_fname,DataFrame);
-
-resp = CSV.read(CWM_response_fname,DataFrame,decimal=',');
-resp = rename(resp, :Column1 => :sta)
->>>>>>> e3b3e2dcdbf60b0480d69460544900c10dfe4609
 
 
 env_matrix = CSV.read(env_matrix_fname,DataFrame)
 env_matrix = rename(env_matrix, Symbol("Station ID") => :sta)
-<<<<<<< HEAD
 @assert Set(resp.sta) ⊆ Set(station.sta)
-=======
-
-@assert Set(resp.sta) ⊆ Set(station.sta)
-
->>>>>>> e3b3e2dcdbf60b0480d69460544900c10dfe4609
 #@assert Set(resp.sta) ⊆ Set(env_matrix.sta)
 #@assert Set(env_matrix.sta) ⊆ Set(station.sta)
 
 setdiff(resp.sta,env_matrix.sta)
 
-<<<<<<< HEAD
 
 
                                             # Directory creation
 
 #plot(df.Longitude,df.Latitude,".")
 
-=======
-df = innerjoin(resp, station, on = :sta)
-
-
-#plot(df.Longitude,df.Latitude,".")
-
-figdir = expanduser("~/Figures/NECCTON")
->>>>>>> e3b3e2dcdbf60b0480d69460544900c10dfe4609
 #=
 for n in names(df)
     d = df[:,n]
@@ -128,7 +89,6 @@ for n in names(df)
 end
 =#
 
-<<<<<<< HEAD
                                     # Load covar
 
 fnames0 = sort(glob("Cl*_1d_*_*_btrc_T_*-*.nc",moddir))
@@ -141,27 +101,6 @@ fnames = sort(glob("Cl*_1d_*_*_grid_T_*-*.nc",moddir))
 lon1, lat1 = neccton_load_coord(fnames)
 
 
-=======
-moddir = expanduser("~/Data/NECCTON/PourSeverine")
-fnames0 = sort(glob("Cl*_1d_*_*_btrc_T_*-*.nc",moddir))
-
-fnames = sort(glob("Cl1992_1d_*_*_grid_T_*-*.nc",moddir))
-
-
-ds = NCDataset(fnames,"r")
-
-lon = ds["nav_lon"][:,:]
-lat = ds["nav_lat"][:,:]
-
-lon = allowmissing(lon)
-lon[lon .== -1] .= missing
-
-lat = allowmissing(lat)
-lat[lat .== -1] .= missing
-
-lon1 = mapslices(s -> first(skipmissing(s)),lon,dims=2)[:,1]
-lat1 = mapslices(s -> first(skipmissing(s)),lat,dims=1)[1,:]
->>>>>>> e3b3e2dcdbf60b0480d69460544900c10dfe4609
 
 #=
 varname = "sbtemper"
@@ -189,19 +128,12 @@ pcolormesh(lon1,lat1,std_sbtemper',cmap="jet")
 
 #pcolormesh(lon1,lat1,mean(sbtemper,dims=3)[:,:,1]'); colorbar()
 
-<<<<<<< HEAD
                                     
 
                                   # Random definition of the trained part of the dataset
                                   # Same lines in post
                                 
 
-=======
-
-# split between training and validation dataset
-
-split_fname = joinpath(basedir,"split.nc")
->>>>>>> e3b3e2dcdbf60b0480d69460544900c10dfe4609
 
 if !isfile(split_fname)
     Random.seed!(42)
@@ -222,7 +154,6 @@ index_train = ds["index_train"][:]
 index_val = ds["index_val"][:]
 close(ds)
 
-<<<<<<< HEAD
                                                 # Bathymetry and mask loading
 
 bathname = expanduser("~/Data/DivaData/Global/gebco_30sec_4.nc")
@@ -239,25 +170,6 @@ y = df.Latitude[index_train]
 
 
 #traits_modalities = ["T1.M1","T1.M2","T1.M3","T1.M4","T1.M5"]
-=======
-
-
-bathname = expanduser("~/Data/DivaData/Global/gebco_30sec_4.nc")
-bathisglobal = true
-
-mask,(pm,pn),(xi,yi) = DIVAnd.domain(bathname,bathisglobal,gridlon,gridlat)
-hx, hy, h = DIVAnd.load_bath(bathname, bathisglobal, gridlon, gridlat)
-
-#pcolormesh(hx,hy,h')
-
-
-
-x = df.Longitude[index_train]
-y = df.Latitude[index_train]
-
-
-traits_modalities = ["T1.M1","T1.M2","T1.M3","T1.M4","T1.M5"]
->>>>>>> e3b3e2dcdbf60b0480d69460544900c10dfe4609
 
 traits_modalities = filter(s -> !isnothing(match(r"T.*\.M.*",s)),String.(propertynames(df)))
 
@@ -312,13 +224,8 @@ function plmap(;orientation = "horizontal")
     clim(cl)
     colorbar(orientation=orientation);
     xlim(gridlon[[1,end]]); ylim(gridlat[[1,end]])
-<<<<<<< HEAD
     OceanPlot.plotmap();
     OceanPlot.set_aspect_ratio()
-=======
-    plotmap();
-    set_aspect_ratio()
->>>>>>> e3b3e2dcdbf60b0480d69460544900c10dfe4609
 end
 
 #=
@@ -350,7 +257,4 @@ validate(fi)
 
 
 =#
-<<<<<<< HEAD
 
-=======
->>>>>>> e3b3e2dcdbf60b0480d69460544900c10dfe4609
