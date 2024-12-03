@@ -1,12 +1,16 @@
-# Post-processing for the DINCAE results
+                                                # Post-processing for the DINCAE results
 
 
 using CSV
 using DataFrames
 using PyPlot, Statistics
+using OceanPlot
 using Interpolations
 using Glob
 using JSON3
+
+
+                                                       # Validation function
 
 function validate(n,fi,fi_err)
     fi_itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN)
@@ -31,27 +35,39 @@ function validate(n,fi,fi_err)
     return (; RMS, correlation, bias, std_obs, std_fi, sigmas...)
 end
 
+
+                                                           # Plot function
+
 function plmap(cl;orientation = "horizontal")
     clim(cl)
     colorbar(orientation=orientation);
     xlim(gridlon[[1,end]]); ylim(gridlat[[1,end]])
-    plotmap();
-    set_aspect_ratio()
+    OceanPlot.plotmap();
+    OceanPlot.set_aspect_ratio()
 end
+
+
+                                                        # Loading of split_fname
+                                          # The file that differentiate the training and the dataset 
+
 
 include("neccton_common.jl")
 
 df = df_load(station_fname,CWM_response_fname)
 
+##### Repetition dincae_prep
 
-ds = NCDataset(split_fname)
-index_train = ds["index_train"][:]
-index_val = ds["index_val"][:]
-close(ds)
+#ds = NCDataset(split_fname)
+#index_train = ds["index_train"][:]
+#index_val = ds["index_val"][:]
+#close(ds)
 
 
-x = df.Longitude[index_train]
-y = df.Latitude[index_train]
+#x = df.Longitude[index_train]
+#y = df.Latitude[index_train]
+
+######
+
 
 # outdir = joinpath(basedir,"DINCAE-temp")
 # outdir = joinpath(basedir,"DINCAE-temp3-rerun")
@@ -69,7 +85,11 @@ varnames = replace.(basename.(glob("T*M*.nc",joinpath(basedir,"DINCAE"))),".nc" 
 xi = gridlon .+ 0 * gridlat'
 yi = 0 * gridlon .+ gridlat'
 
-#varnames = varnames[1:1]
+
+
+
+                                              # Seeking for the varnames in the dataset
+
 for varname in  varnames
     local ds, fnames_rec, v, fi, fi_err, n, cl
 
@@ -81,6 +101,9 @@ for varname in  varnames
     fi = nomissing(ds[varname][:,:,1])
     fi_err = nomissing(ds[varname * "_error"][:,:,1])
 
+  
+    
+    
     #=
     clf();
     subplot(2,2,1); scatter(x,y,10,v); plmap(); title("Observation, training ($n)")
@@ -91,6 +114,10 @@ for varname in  varnames
     savefig(joinpath(figdir,"analysis-$n.png"))
     =#
 
+                                               # Plot + validation statistics computation
+    
+    
+    
     n = varname
     cl = quantile(df[:,n],(0.1,0.9))
 

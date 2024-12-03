@@ -11,26 +11,27 @@ dlon = dlat = 1/16
 gridlon = 27.4:dlon:32
 gridlat = 41.8:dlat:46.8
 
-# Directories
-basedir = expanduser("~/dataset_Severine")
-moddir = expanduser("~/PourSeverine") 
-figdir = expanduser("~/Figures/NECCTON")
+# File location
+basedir = expanduser("~/Data/NECCTON")
+datadir = joinpath(basedir,"dataset_Severine","Datasets")
+auxdir = joinpath(basedir,"dataset_Severine","Auxdata_$(1/dlon)")
 
-datadir = joinpath(basedir,"Datasets")
-auxdir = joinpath(basedir,"Auxdata_$(1/dlon)")
 
-# Files
-split_fname = joinpath(basedir,"split.nc")
+split_fname = joinpath(basedir,"dataset_Severine","split.nc")
+
+moddir = joinpath(basedir,"PourSeverine")
+#moddir = expanduser("~/Data/NECCTON/PourSeverine")
 
 station_fname = joinpath(datadir,"Stations","stations.csv")
-CWM_response_fname = joinpath(datadir,"CWM_SxT","CWM_response.csv")
+#                            (datadir, Community_weighted_matrix (site x traits), "CWM_response.csv")
+CWM_response_fname = joinpath(datadir,"CWM_SxT","CWM_response_fuzzy.csv")
 env_matrix_fname = joinpath(datadir,"Environnement","matrice environnement.txt")
 
 
 function neccton_load_mask()
 
     #fnames0 = sort(glob("Cl*_1d_*_*_btrc_T_*-*.nc",moddir))
-    fnames = sort(glob("Cl*_1d_*_*_grid_T_*-*.nc",moddir))
+    fnames = sort(glob("Cl1992_1d_*_*_grid_T_*-*.nc",moddir))
     NCDataset(fnames[1]) do ds_T
         sbtemper = nomissing(ds_T["sbtemper"][:],NaN)
         mask = .!(isnan.(sbtemper[:,:,1]) .|| sbtemper[:,:,1] .== 0)
@@ -45,10 +46,10 @@ end
 Load longitude and latitude from NEMO file `fname`.
 """
 function neccton_load_coord(fname)
-        ds = NCDataset(fname,"r")
-        lon = ds["nav_lon"][:,:]
-        lat = ds["nav_lat"][:,:]
-        
+    NCDataset(fname) do ds
+        lon = ds["nav_lon"][:]
+        lat = ds["nav_lat"][:]
+
         lon = allowmissing(lon)
         lon[lon .== -1] .= missing
 
@@ -60,7 +61,7 @@ function neccton_load_coord(fname)
 
         return lon1,lat1
     end
-
+end
 
 """
     df = df_load(station_fname,CWM_response_fname)
@@ -73,7 +74,7 @@ function df_load(station_fname,CWM_response_fname)
     resp = CSV.read(CWM_response_fname,DataFrame,decimal=',');
     resp = rename(resp, :Column1 => :sta)
     df = innerjoin(resp, station, on = :sta)
-    return df, resp, station
+    return df
 end
 
 
@@ -124,3 +125,37 @@ function saveinterp((lon,lat),SS2,(gridlon,gridlat),varname,interp_fname)
 
     close(ds)
 end
+
+
+
+function plotmap(bathname = joinpath(ENV["HOME"],"projects","Julia","DIVAnd-example-data","Global","Bathymetry","gebco_30sec_4.nc");
+                  patchcolor = [.8,.8,.8], coastlinecolor = nothing)
+
+    xl = xlim()
+    yl = ylim()
+    # work-around
+    xl = xl[1]:0.1:xl[2]
+    yl = yl[1]:0.1:yl[2]
+
+    bx,by,b = DIVAnd.extract_bath(bathname,true,xl,yl)
+    if patchcolor !== nothing
+        contourf(bx,by,b', levels = [-1e5,0],colors = [patchcolor])
+    end
+
+    if coastlinecolor !== nothing
+        contour(bx,by,b', levels = [-1e5,0],colors = coastlinecolor, linestyles = "-")
+    end
+end
+
+"""
+    set_aspect_ratio()
+
+Fixes the aspect ratio of a plot.
+"""
+function set_aspect_ratio()
+    ax = gca()
+    as = cosd(mean(ylim()))
+    ax.set_aspect(1/as)
+end
+
+println("end of common")

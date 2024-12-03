@@ -1,5 +1,4 @@
 # Execute DINCAE
-using Pkg; Pkg.activate(expanduser("~/src/DINCAE-benthic-traits"))
 
 using Dates
 using DINCAE
@@ -9,15 +8,20 @@ using Printf
 using Random
 using DIVAnd
 using CUDA
+#using DINCAE_altimetry
 using Glob
 using JSON3
 using DataStructures
 using IntervalSets
 
-include("neccton_common.jl")
+#include("neccton_common.jl")
+#@info "Common was loaded"
 
+include("neccton_dincae_prep.jl")
 
 T = Float32
+
+                                            # Repetition from neccton_dincae.jl
 
 bathname = expanduser("~/Data/DivaData/Global/gebco_30sec_4.nc")
 bathisglobal = true
@@ -32,11 +36,22 @@ if !isfile(maskname)
 end
 
 batch_size = 1;
+
+                                             # Resolution coming from common.jl
+
+
 Δlon = dlon
 Δlat = dlat
+
 lonr = gridlon
 latr = gridlat
 
+@show size(lonr)
+
+
+
+
+                                                # Parametrization of DINCAE
 
 clip_grad = 5.0
 epochs = 1000
@@ -71,7 +86,9 @@ loss_weights_refine = (1,)
 seed = 12345
 
 
-# random
+                                     # Parametrization of parameters that have to be random
+
+
 learning_rate = Float32(10 ^ (rand(-4..(-3))))
 laplacian_penalty = Float32(10 ^ (rand(-0..1)))
 enc_nfilter_internal = round.(Int,32 * 2 .^ (0:rand(2:5)))
@@ -82,7 +99,10 @@ upsampling_method = rand([:nearest,:bilinear])
 save_epochs = [epochs]
 
 #epochs = 300
-#------
+
+
+
+                                                    # Temporal scale definition
 
 timestamp = Dates.format(Dates.now(),"yyyy-mm-ddTHHMMSS")
 
@@ -91,6 +111,8 @@ outdir = joinpath(basedir,"DINCAE","DINCAE-$(timestamp)")
 mkpath(outdir)
 
 paramsname = joinpath(outdir,"params.json")
+
+                                                   # Parameter save in a directory
 
 open(paramsname,"w") do f
     JSON3.pretty(f,OrderedDict(
@@ -118,7 +140,13 @@ end
 
 const F = Float32
 
+
 grid = (lonr,latr)
+
+
+
+
+                                                      # GPU availability check
 
 if CUDA.functional()
     Atype = CuArray{F}
@@ -128,16 +156,12 @@ else
 end
 
 
-cd(joinpath(dirname(pathof(DINCAE)),"..")) do
-    if isdir(".git")
-        write("$outdir/DINCAE.commit", read(`git rev-parse HEAD`))
-        write("$outdir/DINCAE.diff", read(`git diff`))
-    end
-end;
+#cd(joinpath(dirname(pathof(DINCAE)),"..")) do
+#    write("$outdir/DINCAE.commit", read(`git rev-parse HEAD`))
+#    write("$outdir/DINCAE.diff", read(`git diff`))
+#end;
 
-if isfile(@__FILE__)
-    cp(@__FILE__,joinpath(outdir,basename(@__FILE__)),force=true)
-end
+cp(@__FILE__,joinpath(outdir,basename(@__FILE__)),force=true)
 
 # function cvrms(fname_rec)
 #     varname = "sla"
@@ -152,7 +176,9 @@ end
 #     return summary["cvrms"]
 # end
 
-# load covariables
+                                                   # load covariables
+
+
 covars_fname = [
     (filename = "mean_sbtemper.nc", varname = "mean_sbtemper", errvarname = nothing),
     (filename = "std_sbtemper.nc",  varname = "std_sbtemper",  errvarname = nothing),
@@ -165,6 +191,8 @@ covars_fname = [
 
 auxdata_files = map(entry -> (;entry...,filename = joinpath(auxdir,entry.filename)),covars_fname)
 
+
+                                              # Variable reconstruction
 
 varname = "T1.M1"
 varnames = replace.(basename.(glob("T*M*.nc",joinpath(basedir,"DINCAE"))),".nc" => "")
@@ -199,5 +227,8 @@ end
 
 #@show cvrms(fnames_rec[1])
 #end
+
+                                                    # Validation through dincae_post
+
 
 include("neccton_dincae_post.jl")
