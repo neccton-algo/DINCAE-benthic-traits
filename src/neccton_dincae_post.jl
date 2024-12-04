@@ -55,26 +55,6 @@ include("neccton_common.jl")
 
 df = df_load(station_fname,CWM_response_fname)
 
-##### Repetition dincae_prep
-
-#ds = NCDataset(split_fname)
-#index_train = ds["index_train"][:]
-#index_val = ds["index_val"][:]
-#close(ds)
-
-
-#x = df.Longitude[index_train]
-#y = df.Latitude[index_train]
-
-######
-
-
-# outdir = joinpath(basedir,"DINCAE-temp")
-# outdir = joinpath(basedir,"DINCAE-temp3-rerun")
-# outdir = joinpath(basedir,"DINCAE-temp4")
-# outdir = joinpath(basedir,"DINCAE-temp-all")
-#outdir = joinpath(basedir,"DINCAE-temp-all-$(1/dlon)-3")
-#outdir = "/home/abarth/Data/NECCTON/DINCAE//DINCAE-2024-02-23T161128/"
 
 figdir = joinpath(outdir,"Fig")
 mkpath(figdir)

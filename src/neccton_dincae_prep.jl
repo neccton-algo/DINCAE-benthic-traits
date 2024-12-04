@@ -63,31 +63,13 @@ df, resp, station = df_load(station_fname,CWM_response_fname);
 
 env_matrix = CSV.read(env_matrix_fname,DataFrame)
 env_matrix = rename(env_matrix, Symbol("Station ID") => :sta)
-@assert Set(resp.sta) ⊆ Set(station.sta)
-#@assert Set(resp.sta) ⊆ Set(env_matrix.sta)
-#@assert Set(env_matrix.sta) ⊆ Set(station.sta)
+@assert Set(resp.sta) ⊆ Set(station.sta) #verifie que la condition est vraie sinon erreure
+# on regarde que toutes las stations dans response sont cpmprise dans sta
+
 
 setdiff(resp.sta,env_matrix.sta)
 
 
-
-                                            # Directory creation
-
-#plot(df.Longitude,df.Latitude,".")
-
-#=
-for n in names(df)
-    d = df[:,n]
-    if d[1] isa Number
-        @show n
-        clf();
-        scatter(df.Longitude,df.Latitude,10,df[:,n])
-        colorbar();
-        title(n)
-        savefig(joinpath(figdir,n * ".png"))
-    end
-end
-=#
 
                                     # Load covar
 
@@ -100,35 +82,6 @@ fnames = sort(glob("Cl*_1d_*_*_grid_T_*-*.nc",moddir))
 
 lon1, lat1 = neccton_load_coord(fnames)
 
-
-
-#=
-varname = "sbtemper"
-sbtemper = nomissing(ds[varname][:,:,:],NaN)
-
-mask = .!(isnan.(sbtemper[:,:,1]) .|| sbtemper[:,:,1] .== 0)
-
-#pcolormesh(mask')
-
-sbtemper[sbtemper .== 0] .= NaN
-
-clf(); pcolormesh(lon1,lat1,sbtemper[:,:,1]')
-
-mean_sbtemper = mean(sbtemper,dims=3)[:,:,1]
-std_sbtemper = std(sbtemper,dims=3)[:,:,1]
-
-
-ncovar = 2
-field0 = zeros(length(lon1),length(lat1),ncovar)
-field0[:,:,1] = mean_sbtemper
-field0[:,:,2] = std_sbtemper
-
-pcolormesh(lon1,lat1,std_sbtemper',cmap="jet")
-=#
-
-#pcolormesh(lon1,lat1,mean(sbtemper,dims=3)[:,:,1]'); colorbar()
-
-                                    
 
                                   # Random definition of the trained part of the dataset
                                   # Same lines in post
@@ -178,16 +131,6 @@ for n in traits_modalities
     @info "processing" n
     v = df[index_train,n]
 
-    positions = collect(zip(x,y))
-    upositions = unique(positions)
-
-    # lon = Vector{Float64}[]
-    # lat = Vector{Float64}[]
-    # dtime = Vector{DateTime}[]
-    # value = Vector{Float64}[]
-    # id = Vector{Int64}[]
-    # udates = Vector{DateTime}(undef,length(upositions))
-
     lon = [x]
     lat = [y]
     dtime = [fill(DateTime(1,1,1),size(x))]
@@ -206,55 +149,5 @@ for n in traits_modalities
     savedata(value,lon,lat,dtime,id,udates,varname,outname)
 end
 
-#=
-for n in traits_modalities
 
-len = 70e3
-len = 80e3
-epsilon2 = 0.5
-
-vm = mean(v)
-va = v .- vm;
-fi,s = DIVAndrun(mask,(pm,pn),(xi,yi),(x,y),va,len,epsilon2);
-fi .+= vm
-
-cl = quantile(df[:,n],(0.1,0.9))
-
-function plmap(;orientation = "horizontal")
-    clim(cl)
-    colorbar(orientation=orientation);
-    xlim(gridlon[[1,end]]); ylim(gridlat[[1,end]])
-    OceanPlot.plotmap();
-    OceanPlot.set_aspect_ratio()
-end
-
-#=
-clf();
-subplot(2,2,1); pcolor(xi,yi,fi); plmap()
-subplot(2,2,2); scatter(x,y,10,v); plmap();
-subplot(2,2,3); scatter(df.Longitude[index_val],df.Latitude[index_val],10,df[index_val,n]);
-plmap()
-=#
-
-
-function validate(fi)
-    itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN)
-
-    fi_val = itp.(df.Longitude[index_val],df.Latitude[index_val])
-
-
-    v_val = df[index_val,n]
-
-    @show sqrt(mean(filter(isfinite,(fi_val - v_val).^2)))
-    @show sqrt(mean(filter(isfinite,(vm .- v_val).^2)))
-    @show std(v)
-end
-
-validate(fi)
-
-
-
-
-
-=#
 

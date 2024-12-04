@@ -14,8 +14,6 @@ using JSON3
 using DataStructures
 using IntervalSets
 
-#include("neccton_common.jl")
-#@info "Common was loaded"
 
 include("neccton_dincae_prep.jl")
 
@@ -35,7 +33,7 @@ if !isfile(maskname)
     end
 end
 
-batch_size = 1;
+
 
                                              # Resolution coming from common.jl
 
@@ -52,7 +50,7 @@ latr = gridlat
 
 
                                                 # Parametrization of DINCAE
-
+batch_size = 1;
 clip_grad = 5.0
 epochs = 1000
 #epochs = 500
@@ -133,7 +131,6 @@ open(paramsname,"w") do f
         "probability_skip_for_training" => probability_skip_for_training,
         "learning_rate" => learning_rate,
         "learning_rate_decay_epoch" => learning_rate_decay_epoch,
-        "batch_size" => batch_size,
         "seed" => seed,
     ))
 end
@@ -156,25 +153,8 @@ else
 end
 
 
-#cd(joinpath(dirname(pathof(DINCAE)),"..")) do
-#    write("$outdir/DINCAE.commit", read(`git rev-parse HEAD`))
-#    write("$outdir/DINCAE.diff", read(`git diff`))
-#end;
-
 cp(@__FILE__,joinpath(outdir,basename(@__FILE__)),force=true)
 
-# function cvrms(fname_rec)
-#     varname = "sla"
-
-#     filename_dev = expanduser("~/tmp/Altimetry/all-sla.dev.nc")
-#     fnamesummary_dev = replace(fname_rec,".nc" => ".dev.json")
-
-#     filename_test = expanduser("~/tmp/Altimetry/all-sla.test.nc")
-#     fnamesummary_test = replace(fname_rec,".nc" => ".test.json")
-
-#     summary, = DINCAE_altimetry.errstat(filename_dev,fname_rec,varname,maskname; fnamesummary = fnamesummary_dev)
-#     return summary["cvrms"]
-# end
 
                                                    # load covariables
 
@@ -202,7 +182,7 @@ mkpath(outdir)
 for varname in varnames
     filename = joinpath(basedir,"DINCAE",varname * ".nc")
 
-    fnames_rec = [joinpath(outdir,"data-avg-$varname.nc")]
+    fnames_rec = [joinpath(outdir,"data-avg-$varname.nc")] # fichier de sauvegarde au sein de rp.
 
 
 DINCAE.reconstruct_points(
@@ -225,8 +205,6 @@ DINCAE.reconstruct_points(
 )
 end
 
-#@show cvrms(fnames_rec[1])
-#end
 
                                                     # Validation through dincae_post
 
