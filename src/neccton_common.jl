@@ -12,18 +12,19 @@ gridlon = 27.4:dlon:32
 gridlat = 41.8:dlat:46.8
 
 # Directories
-basedir = expanduser("~/dataset_Severine")
-moddir = expanduser("~/PourSeverine") 
-figdir = expanduser("~/Figures/NECCTON")
+basedir = expanduser("~/Reconstruct_Points/Datasets")
+moddir = expanduser("~/Reconstruct_Points/ModelOut")
+moddirNew = expanduser("~/Reconstruct_Points/ModelNew")
+figdir = expanduser("~/Reconstruct_Points/Datasets/Figures")
 
-datadir = joinpath(basedir,"Datasets")
+datadir = joinpath(basedir,"BenthicData")
 auxdir = joinpath(basedir,"Auxdata_$(1/dlon)")
 
 # Files
 split_fname = joinpath(basedir,"split.nc")
 
 station_fname = joinpath(datadir,"Stations","stations.csv")
-CWM_response_fname = joinpath(datadir,"CWM_SxT","CWM_response.csv")
+CWM_response_fname = joinpath(datadir,"CWM_SxT","cwm.csv")
 env_matrix_fname = joinpath(datadir,"Environnement","matrice environnement.txt")
 
 
@@ -48,7 +49,7 @@ function neccton_load_coord(fname)
         ds = NCDataset(fname,"r")
         lon = ds["nav_lon"][:,:]
         lat = ds["nav_lat"][:,:]
-        
+
         lon = allowmissing(lon)
         lon[lon .== -1] .= missing
 

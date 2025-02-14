@@ -17,26 +17,12 @@ using IntervalSets
 
 include("neccton_dincae_prep.jl")
 
-T = Float32
 
-                                            # Repetition from neccton_dincae.jl
+# Set the precision : = Float32 for fast run
+const T = Float32
+const F = Float32
 
-bathname = expanduser("~/Data/DivaData/Global/gebco_30sec_4.nc")
-bathisglobal = true
-
-mask,(pm,pn),(xi,yi) = DIVAnd.domain(bathname,bathisglobal,gridlon,gridlat)
-
-maskname = joinpath(basedir,"DINCAE","mask.nc")
-if !isfile(maskname)
-    NCDataset(maskname,"c") do ds
-        defVar(ds,"mask",Int8.(mask),("lon","lat"))
-    end
-end
-
-
-
-                                             # Resolution coming from common.jl
-
+# Resolution coming from common.jl
 
 Δlon = dlon
 Δlat = dlat
@@ -49,50 +35,65 @@ latr = gridlat
 
 
 
-                                                # Parametrization of DINCAE
-batch_size = 1;
-clip_grad = 5.0
-epochs = 1000
-#epochs = 500
-save_epochs = 60:10:epochs
-save_epochs = [epochs]
-#enc_nfilter_internal = [25,50,75]
-enc_nfilter_internal = [25,50,75,75,75,75]
-enc_nfilter_internal = round.(Int,32 * 2 .^ (0:4))
+# Parametrization of DINCAE
+
+# Modified ones
+probability_skip_for_training = 0.6
+#probability_skip_for_training = 1.
+
+learning_rate_decay_epoch = 50
+
+regularization_L2_beta = 0
+
 upsampling_method = :nearest
 #upsampling_method = :bilinear
-probability_skip_for_training = 0.4
-#probability_skip_for_training = 1.
-jitter_std_pos = (0.17145703272237467f0,0.17145703272237467f0)
+
+learning_rate = 0.0004906558111668519
+
+
+# Unmodified ones
+
+batch_size = 1;
+
+clip_grad = 5.0
+
+epochs = 1000
+#epochs = 500
+
+#save_epochs = 60:10:epochs
+save_epochs = [epochs]
+
+#enc_nfilter_internal = [25,50,75]
+enc_nfilter_internal = round.(Int,32 * 2 .^ (0:4))
+
+
 #jitter_std_pos = 0.5 .* (0.17145703272237467f0,0.17145703272237467f0)
 jitter_std_pos = (0f0,0f0)
+
 ntime_win = 1
-learning_rate = 0.0004906558111668519
+
+
+
 skipconnections = 3:length(enc_nfilter_internal)
-skipconnections = 3:(length(enc_nfilter_internal)+1)
-learning_rate_decay_epoch = 50
-laplacian_penalty = 1f-3
-laplacian_penalty = 1f-2
-laplacian_penalty = 1f-1
-laplacian_penalty = 2f-1
-laplacian_penalty = 1f0
+#skipconnections = 3:(length(enc_nfilter_internal)+1)
+
 laplacian_penalty = 0.8f0
-#laplacian_penalty = 0
-regularization_L2_beta = 0
+
+
 loss_weights_refine = (1,)
 #loss_weights_refine = (0.1,0.2,0.7)
+
 seed = 12345
 
 
-                                     # Parametrization of parameters that have to be random
-
+# Parametrization of parameters that have to be random
 
 learning_rate = Float32(10 ^ (rand(-4..(-3))))
 laplacian_penalty = Float32(10 ^ (rand(-0..1)))
 enc_nfilter_internal = round.(Int,32 * 2 .^ (0:rand(2:5)))
 #regularization_L2_beta = Float32(10 ^ (rand(-6..(-1))))
 epochs = rand(300:1500)
-upsampling_method = rand([:nearest,:bilinear])
+#upsampling_method = rand([:nearest,:bilinear])
 #save_epochs = 200:rand(20:60):epochs
 save_epochs = [epochs]
 
@@ -100,17 +101,14 @@ save_epochs = [epochs]
 
 
 
-                                                    # Temporal scale definition
+# Temporal scale definition
 
 timestamp = Dates.format(Dates.now(),"yyyy-mm-ddTHHMMSS")
-
-outdir = joinpath(basedir,"DINCAE","DINCAE-$(timestamp)")
-
+outdir = joinpath(basedir,"Results","DINCAE-$(timestamp)")
 mkpath(outdir)
-
 paramsname = joinpath(outdir,"params.json")
 
-                                                   # Parameter save in a directory
+# Parameter saved in a directory
 
 open(paramsname,"w") do f
     JSON3.pretty(f,OrderedDict(
@@ -135,15 +133,14 @@ open(paramsname,"w") do f
     ))
 end
 
-const F = Float32
 
+# Defining the grid based on the resolution
 
 grid = (lonr,latr)
 
 
 
-
-                                                      # GPU availability check
+# GPU availability check
 
 if CUDA.functional()
     Atype = CuArray{F}
@@ -152,33 +149,40 @@ else
     Atype = Array{F}
 end
 
+@show Atype
 
 cp(@__FILE__,joinpath(outdir,basename(@__FILE__)),force=true)
 
 
-                                                   # load covariables
-
+# load covariables
 
 covars_fname = [
-    (filename = "mean_sbtemper.nc", varname = "mean_sbtemper", errvarname = nothing),
-    (filename = "std_sbtemper.nc",  varname = "std_sbtemper",  errvarname = nothing),
-    (filename = "mean_DOX.nc",      varname = "mean_dox",      errvarname = nothing),
-    (filename = "std_DOX.nc",       varname = "std_dox",       errvarname = nothing),
-    (filename = "low_DOX.nc",       varname = "low_dox",       errvarname = nothing),
-    (filename = "mean_PAR.nc",      varname = "mean_par",      errvarname = nothing),
-    (filename = "std_PAR.nc",       varname = "std_par",       errvarname = nothing),
+#    (filename = "mean_oxygenbot.nc", varname = "mean_oxygenbot", errvarname = nothing),
+#    (filename = "std_oxygenbot.nc",  varname = "std_oxygenbot",  errvarname = nothing),
+#    (filename = "mean_DOX.nc",      varname = "mean_dox",      errvarname = nothing),
+#    (filename = "std_DOX.nc",       varname = "std_dox",       errvarname = nothing),
+#    (filename = "low_DOX.nc",       varname = "low_dox",       errvarname = nothing),
+#    (filename = "mean_co2down.nc",      varname = "mean_co2down",      errvarname = nothing),
+#    (filename = "std_co2down.nc",       varname = "std_co2down",       errvarname = nothing),
 ]
+
+# Put everything in auxdata_files
 
 auxdata_files = map(entry -> (;entry...,filename = joinpath(auxdir,entry.filename)),covars_fname)
 
 
-                                              # Variable reconstruction
+
+# Variable reconstruction
 
 varname = "T1.M1"
 varnames = replace.(basename.(glob("T*M*.nc",joinpath(basedir,"DINCAE"))),".nc" => "")
 
 mkpath(outdir)
-#for varname in varnames[1:1]
+
+
+
+# DINCAE.reconstruct_points for every variable
+
 for varname in varnames
     filename = joinpath(basedir,"DINCAE",varname * ".nc")
 
@@ -206,7 +210,7 @@ DINCAE.reconstruct_points(
 end
 
 
-                                                    # Validation through dincae_post
+# Validation through dincae_post
 
 
 include("neccton_dincae_post.jl")

@@ -27,7 +27,7 @@ include("neccton_common.jl")
                 # split_fname = joinpath(basedir,"split.nc")
 
 
-                                            # Saving dataset function
+# Saving dataset function
 
 function savedata(values,lon,lat,time,id,udates,varname,outname)
     len = length.(values);
@@ -55,38 +55,33 @@ end
 
 
 
-                                        # Reading and dataset loading with common names
-
+# Create df from station and CWM to get traits per location
 
 df, resp, station = df_load(station_fname,CWM_response_fname);
 
 
+
+# We check that we have all stations
+
 env_matrix = CSV.read(env_matrix_fname,DataFrame)
 env_matrix = rename(env_matrix, Symbol("Station ID") => :sta)
-@assert Set(resp.sta) ⊆ Set(station.sta) #verifie que la condition est vraie sinon erreure
-# on regarde que toutes las stations dans response sont cpmprise dans sta
-
-
+@assert Set(resp.sta) ⊆ Set(station.sta) # Error if the condition is not fullfilled
 setdiff(resp.sta,env_matrix.sta)
 
 
 
-                                    # Load covar
+# Load covar
 
 fnames0 = sort(glob("Cl*_1d_*_*_btrc_T_*-*.nc",moddir))
 fnames = sort(glob("Cl*_1d_*_*_grid_T_*-*.nc",moddir))
 
 
-                                    # Function defined in common
-
+# Loading coordiantes of co-variables
 
 lon1, lat1 = neccton_load_coord(fnames)
 
 
-                                  # Random definition of the trained part of the dataset
-                                  # Same lines in post
-                                
-
+# Random definition of the trained part of the dataset
 
 if !isfile(split_fname)
     Random.seed!(42)
@@ -102,32 +97,51 @@ if !isfile(split_fname)
 end
 
 
+
+
+# Separating training and validation
+
 ds = NCDataset(split_fname)
 index_train = ds["index_train"][:]
 index_val = ds["index_val"][:]
 close(ds)
 
-                                                # Bathymetry and mask loading
 
-bathname = expanduser("~/Data/DivaData/Global/gebco_30sec_4.nc")
+# Bathymetry and mask loading
+
+bathname = expanduser("~/Reconstruct_Points/Bathy/DivaData/Global/gebco_30sec_4.nc")
 bathisglobal = true
 mask,(pm,pn),(xi,yi) = DIVAnd.domain(bathname,bathisglobal,gridlon,gridlat)
 hx, hy, h = DIVAnd.load_bath(bathname, bathisglobal, gridlon, gridlat)
 #pcolormesh(hx,hy,h')
 
+# Create a file for the mask
+
+maskname = joinpath(basedir,"Results","mask.nc")
+if !isfile(maskname)
+    NCDataset(maskname,"c") do ds
+        defVar(ds,"mask",Int8.(mask),("lon","lat"))
+    end
+end
+
+
+
+# Longitude and latitude of train dataset
+println("salut")
 
 x = df.Longitude[index_train]
 y = df.Latitude[index_train]
 
-                                     # Definition of the modalitites that are trained + save
 
+
+# Loading traits modalities
 
 #traits_modalities = ["T1.M1","T1.M2","T1.M3","T1.M4","T1.M5"]
-
 traits_modalities = filter(s -> !isnothing(match(r"T.*\.M.*",s)),String.(propertynames(df)))
 
 n = "T1.M1"
 for n in traits_modalities
+    @show n
     @info "processing" n
     v = df[index_train,n]
 
@@ -148,6 +162,3 @@ for n in traits_modalities
 
     savedata(value,lon,lat,dtime,id,udates,varname,outname)
 end
-
-
-

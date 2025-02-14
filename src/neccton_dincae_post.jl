@@ -10,7 +10,7 @@ using Glob
 using JSON3
 
 
-                                                       # Validation function
+# Validation function
 
 function validate(n,fi,fi_err)
     fi_itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN)
@@ -36,7 +36,7 @@ function validate(n,fi,fi_err)
 end
 
 
-                                                           # Plot function
+# Plot function
 
 function plmap(cl;orientation = "horizontal")
     clim(cl)
@@ -47,13 +47,10 @@ function plmap(cl;orientation = "horizontal")
 end
 
 
-                                                        # Loading of split_fname
-                                          # The file that differentiate the training and the dataset 
 
+# Include prep to retrieve df variable
 
-include("neccton_common.jl")
-
-df = df_load(station_fname,CWM_response_fname)
+include("neccton_dincae_prep.jl")
 
 
 figdir = joinpath(outdir,"Fig")
@@ -68,7 +65,7 @@ yi = 0 * gridlon .+ gridlat'
 
 
 
-                                              # Seeking for the varnames in the dataset
+# Seeking for the varnames in the dataset
 
 for varname in  varnames
     local ds, fnames_rec, v, fi, fi_err, n, cl
@@ -84,17 +81,9 @@ for varname in  varnames
   
     
     
-    #=
-    clf();
-    subplot(2,2,1); scatter(x,y,10,v); plmap(); title("Observation, training ($n)")
-    subplot(2,2,2); scatter(df.Longitude[index_val],df.Latitude[index_val],10,df[index_val,n]); title("Observation, validation ($n)")
-    plmap()
-    subplot(2,2,3); pcolor(xi,yi,fi); plmap()
-    title("Analysis (using training data)")
-    savefig(joinpath(figdir,"analysis-$n.png"))
-    =#
 
-                                               # Plot + validation statistics computation
+
+# Plot + validation statistics computation
     
     
     
