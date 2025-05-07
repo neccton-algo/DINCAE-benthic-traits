@@ -3,8 +3,9 @@ using CSV
 using DataFrames
 using PyPlot
 using Statistics
-
-
+using Glob
+using JSON3
+using OceanPlot
 
 # Common.jl
 
@@ -34,18 +35,31 @@ end
 
 # Validate
 
-function validate(fi)
-    itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN)
+function validateDIVA(fi,n)
+    itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN) # Interpolation of the result
 
-    fi_val = itp.(df.Longitude[index_val],df.Latitude[index_val])
+    fi_val = itp.(df.Longitude[index_val],df.Latitude[index_val]) # On the validation data
 
 
-    v_val = df[index_val,n]
+    v_val = df[index_val,n] # Taking the variable name
 
-    @show sqrt(mean(filter(isfinite,(fi_val - v_val).^2)))
-    @show sqrt(mean(filter(isfinite,(vm .- v_val).^2)))
-    @show std(v)
+    RMS1 = sqrt(mean(filter(isfinite,(fi_val - v_val).^2))) 
+    #RMS2 = sqrt(mean(filter(isfinite,(vm .- v_val).^2)))
+    
+
+    return RMS1
+    
 end
+
+
+function plmap(cl;orientation = "horizontal")
+    clim(cl)
+    colorbar(orientation=orientation);
+    xlim(gridlon[[1,end]]); ylim(gridlat[[1,end]])
+    OceanPlot.plotmap();
+    OceanPlot.set_aspect_ratio()
+end
+
 
 
 # Separating training and validation following Split
@@ -69,29 +83,39 @@ bathisglobal = true
 mask,(pm,pn),(xi,yi) = DIVAnd.domain(bathname,bathisglobal,gridlon,gridlat)
 hx, hy, h = DIVAnd.load_bath(bathname, bathisglobal, gridlon, gridlat)
 #pcolormesh(hx,hy,h')
-pcolormesh(mask')
+#pcolormesh(mask')
 
-
-# Var Definition
-
-# for(n qui tourne sur toutes les valeurs T)
-
-
-n = "T1.M1" # Trait
-v = df[index_train,n] 
-
-
-
-#size(x)
 
 
 # Parametrization
 
-len = Float64(50000)
-epsilon2 = 0.1
+len = Float64(10^4)
+epsilon2 = 0.01
+
+
+
+# Var Definition
+
+#varname = "T2.M1" # Trait
+#v = df[index_train,varname] 
+
+
+
+varname = "T1.M1"
+varnames = replace.(
+    basename.(
+        filter(f->!endswith(f,"_val.nc"), glob("T*M*.nc",joinpath(basedir,"DINCAE")))
+        ),".nc" => "")
+
+
+for varname in varnames
+
+    v = df[index_train,varname] # 158 valeurs de trainset
 
 
 # DIVAndrun
+
+cl = quantile(v[:],(0.01,0.99))
 
 # Compute anomaly
 vm = mean(v)
@@ -99,20 +123,36 @@ v_anomaly = v.-vm
 
 va,s = DIVAndrun(mask,(pm,pn),(xi,yi),(x,y),v_anomaly,len,epsilon2)
 
-
 # Add mean to anomaly
 va = va .+vm
 
 pcolor(va')
+colorbar()
 
+# Without anomalies
+vav,s = DIVAndrun(mask,(pm,pn),(xi,yi),(x,y),v,len,epsilon2)
 
+   fig =  pcolor(xi,yi,vav);plmap(cl);title("Basline DIVAnd for $varname")
+    savefig(fig)
+    
 
+RMS_DIVAnd = validateDIVA(va,varname)
+    
 # Validation
+open("sortieDIVAnd.txt", "a") do f
 
-validate(va)
+
+    write(f,varname * "\n")
+    
+    JSON3.pretty(f,"RMS = $(RMS_DIVAnd)"; allow_inf=true)
+    write(f, "\n")
+
+end
+    
+
+
+end
 
 
 # save va + le resultat de validate
 # end de toute les valeurs qui tournent sur t
-
-
