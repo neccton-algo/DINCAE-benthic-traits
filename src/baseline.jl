@@ -32,21 +32,19 @@ if !isfile(split_fname)
 end
 
 
-
 # Validate
 
-function validateDIVA(fi,n)
-    itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN) # Interpolation of the result
+function validateDIVA(fi,n) # fi = DIVAnd result, n = varname
+
+    itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN) # Creation of the interpolator of the result fi
 
     fi_val = itp.(df.Longitude[index_val],df.Latitude[index_val]) # On the validation data
 
 
-    v_val = df[index_val,n] # Taking the variable name
+    v_val = df[index_val,n] # Taking values of the validation dataset on the considered stations
 
     RMS1 = sqrt(mean(filter(isfinite,(fi_val - v_val).^2))) 
-    #RMS2 = sqrt(mean(filter(isfinite,(vm .- v_val).^2)))
-    
-
+        
     return RMS1
     
 end
@@ -89,8 +87,8 @@ hx, hy, h = DIVAnd.load_bath(bathname, bathisglobal, gridlon, gridlat)
 
 # Parametrization
 
-len = Float64(10^4)
-epsilon2 = 0.01
+len = Float64(12^4)
+epsilon2 = 0.007
 
 
 
@@ -110,41 +108,49 @@ varnames = replace.(
 
 for varname in varnames
 
-    v = df[index_train,varname] # 158 valeurs de trainset
+# Train set load
+v = df[index_train,varname] # 158 valeurs de trainset
 
 
 # DIVAndrun
+cl = quantile(v[:],(0.001,0.95))
 
-cl = quantile(v[:],(0.01,0.99))
-
-# Compute anomaly
+# With anomaly
 vm = mean(v)
 v_anomaly = v.-vm
 
 va,s = DIVAndrun(mask,(pm,pn),(xi,yi),(x,y),v_anomaly,len,epsilon2)
 
-# Add mean to anomaly
-va = va .+vm
+va = va .+vm # Add mean to anomaly
 
-pcolor(va')
-colorbar()
+fig1 = pcolor(xi,yi,va);plmap(cl);title("Basline DIVAnd_anmoaly for $varname")
 
+
+RMS_DIVAnd_anomaly = validateDIVA(va,varname)
+
+    
 # Without anomalies
 vav,s = DIVAndrun(mask,(pm,pn),(xi,yi),(x,y),v,len,epsilon2)
 
-   fig =  pcolor(xi,yi,vav);plmap(cl);title("Basline DIVAnd for $varname")
-    savefig(fig)
-    
 
-RMS_DIVAnd = validateDIVA(va,varname)
+pcolor(xi,yi,vav);plmap(cl);title("Basline DIVAnd for $varname")
+savefig(joinpath(figdir, "DIVAnd-result-$varname.png"))
+
+RMS_DIVAnd = validateDIVA(vav,varname)
+
+
     
-# Validation
+# Save results
 open("sortieDIVAnd.txt", "a") do f
 
 
     write(f,varname * "\n")
     
+    JSON3.pretty(f,"RMS_anomaly = $(RMS_DIVAnd_anomaly)"; allow_inf=true)
+    write(f, "\n")
+    
     JSON3.pretty(f,"RMS = $(RMS_DIVAnd)"; allow_inf=true)
+
     write(f, "\n")
 
 end
