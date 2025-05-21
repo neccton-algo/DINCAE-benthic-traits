@@ -18,7 +18,7 @@ Additional data
 
 ## Baseline method
 
-Monovation interpolation with [DIVAnd.jl](https://github.com/gher-uliege/DIVAnd.jl)
+Improvement of the neural network is assess using monovation interpolation with [DIVAnd.jl](https://github.com/gher-uliege/DIVAnd.jl).
 
 ## Metrics
 
