@@ -9,9 +9,20 @@ DINCAE is intended to be used with a [GPU](https://en.wikipedia.org/wiki/Graphic
 
 ## Data Source
 
+Primary data source
+* Traits database from Séverine Chevalier
+
+Additional data
+* Model output from BAMHBI (a.o. dissolved oxygen,...)
+* Bathymetry (GEBCO)
+
 ## Baseline method
 
+Monovation interpolation with [DIVAnd.jl](https://github.com/gher-uliege/DIVAnd.jl)
+
 ## Metrics
+
+Metric of training is the negative log likelihood assuming a log-Normal distribution. For validation, the RMS error is used as metric.
 
 ## List of dependencies
 
