@@ -22,7 +22,7 @@ Improvement of the neural network is assess using monovation interpolation with 
 
 ## Metrics
 
-Metric of training is the negative log likelihood assuming a log-Normal distribution. For validation, the RMS error is used as metric.
+Metric of training is the negative log likelihood assuming a log-Normal distribution. For validation and hyperparameter tuning, the RMS error relative to independent data is used as metric.
 
 ## List of dependencies
 
