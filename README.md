@@ -9,11 +9,13 @@ DINCAE is intended to be used with a [GPU](https://en.wikipedia.org/wiki/Graphic
 
 ## Data Source
 
-Primary data source
-* Traits database from Séverine Chevalier
+### Primary data source
 
-Additional data
-* Model output from BAMHBI (a.o. dissolved oxygen,...)
+* Community weighted matrix of traits (Séverine Chevalier)
+
+### Additional data
+* Model output from BAMHBI (POC, sedimentary flux, bottom stress, oxygen content)
+* Type of sediment
 * Bathymetry (GEBCO)
 
 ## Baseline method
