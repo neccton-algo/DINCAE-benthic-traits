@@ -2,16 +2,27 @@
 
 Neural network to generate maps of benthic traits based on [DINCAE](https://github.com/gher-uliege/DINCAE.jl) (Data-Interpolating Convolutional Auto-Encoder).
 
-🚧 🚧 **This is work in-progress** 🚧 🚧
-
-DINCAE is intended to be used with a [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) with [CUDA](https://en.wikipedia.org/wiki/CUDA) support (NVIDIA GPU). The code can also run on a [CPU](https://en.wikipedia.org/wiki/Central_processing_unit) but which will be quite slow.
+DINCAE is intended to be used with a [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) with [CUDA](https://en.wikipedia.org/wiki/CUDA) support (NVIDIA GPU). The code can also run on a [CPU](https://en.wikipedia.org/wiki/Central_processing_unit) but which will be quite slow. AMD GPU (ROCm) support is experimental.
 
 
 ## Data Source
 
+### Primary data source
+
+* Community weighted matrix of traits (Séverine Chevalier)
+
+### Additional data
+* Model output from BAMHBI (POC, sedimentary flux, bottom stress, oxygen content)
+* Type of sediment
+* Bathymetry (GEBCO)
+
 ## Baseline method
 
+Improvement of the neural network is assess using monovation interpolation with [DIVAnd.jl](https://github.com/gher-uliege/DIVAnd.jl).
+
 ## Metrics
+
+Metric of training is the negative log likelihood assuming a log-Normal distribution. For validation and hyperparameter tuning, the RMS error relative to independent data is used as metric.
 
 ## List of dependencies
 
