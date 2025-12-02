@@ -14,27 +14,41 @@ using FileWatching
 
 # Validation function
 
-function validate(n,fi,fi_err)
-    fi_itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN)
-    fi_val = fi_itp.(df.Longitude[index_val],df.Latitude[index_val])
+function validate(n,fi,fi_err,epochs,probability_skip_for_training,learning_rate_decay_epoch,regularization_L2_beta,upsampling_method,learning_rate)
 
-    fi_err_itp = extrapolate(interpolate((gridlon,gridlat),fi, Gridded(Linear())),NaN)
-    fi_err_val = fi_err_itp.(df.Longitude[index_val],df.Latitude[index_val])
 
-    v_val = df[index_val,n]
+    fi_itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN) # Create fi interpolator
+    fi_val = fi_itp.(df.Longitude[index_val],df.Latitude[index_val]) # Interpolate on validation index
+
+    fi_train_itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN) # Create fi train interpolator
+    fi_train = fi_train_itp.(df.Longitude[index_train], df.Latitude[index_train]) # Inteprolate fi on training points
+    
+    fi_err_itp = extrapolate(interpolate((gridlon,gridlat),fi, Gridded(Linear())),NaN) # Create fi_error interpolator
+    fi_err_val = fi_err_itp.(df.Longitude[index_val],df.Latitude[index_val]) # Interpolate error on validation
+
+
+    v_train = df[index_train,n] # Values of training
+    v_val = df[index_val,n] # Values of validation
     sel = isfinite.(fi_val) .& isfinite.(v_val)
-
+    sel_train = isfinite.(fi_train)
+    
     sigmas = (;  (Symbol("sigma$i") => mean(abs.(v_val[sel]-fi_val[sel]) .<  i*fi_err_val[sel]) for i = 1:3)...)
 
+    RMS_train = sqrt(mean((fi_train[sel_train] - v_train[sel_train]).^2))
     RMS = sqrt(mean((fi_val[sel] - v_val[sel]).^2))
     correlation = cor(fi_val[sel],v_val[sel])
     bias = mean(fi_val[sel] - v_val[sel])
 
     std_obs = std(v_val[sel])
     std_fi = std(fi_val[sel])
-#    @show RMS
+
+    epochs = epochs
+    
+    #@show RMS
     #    @show sqrt(mean(filter(isfinite,(vm .- v_val).^2)))
-    return (; RMS, correlation, bias, std_obs, std_fi, sigmas...)
+
+
+    return (; epochs,probability_skip_for_training,learning_rate_decay_epoch,regularization_L2_beta,upsampling_method,learning_rate, RMS, RMS_train, correlation, bias, std_obs, std_fi, sigmas...)
 end
 
 
@@ -104,23 +118,28 @@ y = df.Latitude[index_train]
 
 # Index and Args
 
-index = Int[]
-index = parse(Int,ARGS[1])
+#index = Int[]
+#index = parse(Int,ARGS[1])
 # replace varname by the index of the sbatch
 # Each sbatch iteration change varname
-varname = varnames[index]
+#varname = varnames[index]
 
 
 # Lock file for parralelisation
-FileWatching.Pidfile.mkpidlock(expanduser("~/Reconstruct_Points/DINCAE-benthic-traits/src/DINCAE.pid")) do
+#FileWatching.Pidfile.mkpidlock(expanduser("~/Reconstruct_Points/DINCAE-benthic-traits/src/DINCAE.pid")) do
 
 #################################
 
-    
+LifeH = ["K","r","A"]
+varname = "K"
+for n in LifeH
+    println("$n")
+end
+   
 # Seeking for the varnames in the dataset
 open("sortieDINCAE.txt", "a") do f
 
-#for varname in  varnames
+for varname in  LifeH
     local ds, fnames_rec, v, fi, fi_err, n, cl
 
     @show varname
@@ -146,16 +165,24 @@ open("sortieDINCAE.txt", "a") do f
     savefig(joinpath(figdir,"analysis-$n.png"))
 
     # validate function on the current variable
-    summary = validate(n,fi,fi_err)
+    summary = validate(n,fi,fi_err,epochs,probability_skip_for_training,learning_rate_decay_epoch,regularization_L2_beta,upsampling_method,learning_rate)
     @show summary
 
 
     # Writing results in f "sortieDINCAE"
     
-    write(f,varname * "\n")
+    write(f,varname * "\n")   
     JSON3.pretty(f, summary; allow_inf=true)
     write(f, "\n")
     
-#    end
+    end
      end # stop writing
-end # close lock
+#end # close lock
+
+
+
+
+
+
+using Pkg
+Pkg.add(url="https://github.com/gher-uliege/OceanPlot.jl",rev="master")
