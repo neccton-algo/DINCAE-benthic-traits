@@ -3,11 +3,13 @@
 
 using CSV
 using DataFrames
-using PyPlot, Statistics
 using OceanPlot
+using PyPlot, Statistics
 using Interpolations
 using Glob
 using JSON3
+using Dates
+using FileWatching
 
 
 # Validation function
@@ -16,7 +18,7 @@ function validate(n,fi,fi_err)
     fi_itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN)
     fi_val = fi_itp.(df.Longitude[index_val],df.Latitude[index_val])
 
-    fi_err_itp = extrapolate(interpolate((gridlon,gridlat),fi,Gridded(Linear())),NaN)
+    fi_err_itp = extrapolate(interpolate((gridlon,gridlat),fi, Gridded(Linear())),NaN)
     fi_err_val = fi_err_itp.(df.Longitude[index_val],df.Latitude[index_val])
 
     v_val = df[index_val,n]
@@ -50,26 +52,79 @@ end
 
 # Include prep to retrieve df variable
 
-include("neccton_dincae_prep.jl")
+#include("neccton_dincae_prep.jl")
 
 
-figdir = joinpath(outdir,"Fig")
-mkpath(figdir)
+#figdir = joinpath(basedir,"Figures")
+#mkpath(figdir)
+
+
+# For any trait
 
 varname = "T1.M1"
-varnames = replace.(basename.(glob("T*M*.nc",joinpath(basedir,"DINCAE"))),".nc" => "")
+varnames = replace.(
+    basename.(
+        filter(f->!endswith(f,"_val.nc"), glob("T*M*.nc",joinpath(basedir,"DINCAE")))
+        ),".nc" => "")
+
+# Subset for first RMS analysis 1=>18 
+#varnames = varnames[1:51]
+#varnames = varnames[51:end]
+
+# For severine exdidataset
+
+#varname = "T15.M1"
+#varnames = ["T15.M1","T15.M2","T15.M3","T15.M4","T15.M5","T16.M1","T16.M2","T16.M3","T16.M4","T16.M5","T17.M1","T17.M2","T17.M3","T17.M4","T17.M5","T27.M1","T27.M2","T27.M3","T27.M4"]
+
+#time_run = "DINCAE_2025-02-25T143624"
+
+
+# Grid
 
 xi = gridlon .+ 0 * gridlat'
 yi = 0 * gridlon .+ gridlat'
 
 
+# Corrections suite au message d'erreur avec les ARGS
+
+df, resp, station = df_load(station_fname,CWM_response_fname);
+ds = NCDataset(split_fname)
+index_train = ds["index_train"][:]
+index_val = ds["index_val"][:]
+close(ds)
+
+x = df.Longitude[index_train]
+y = df.Latitude[index_train]
 
 
+
+
+
+######## For parrallel #########
+
+# Index and Args
+
+index = Int[]
+index = parse(Int,ARGS[1])
+# replace varname by the index of the sbatch
+# Each sbatch iteration change varname
+varname = varnames[index]
+
+
+# Lock file for parralelisation
+FileWatching.Pidfile.mkpidlock(expanduser("~/Reconstruct_Points/DINCAE-benthic-traits/src/DINCAE.pid")) do
+
+#################################
+
+    
 # Seeking for the varnames in the dataset
+open("sortieDINCAE.txt", "a") do f
 
-for varname in  varnames
+#for varname in  varnames
     local ds, fnames_rec, v, fi, fi_err, n, cl
 
+    @show varname
+    
     v = df[index_train,varname]
 
     fnames_rec = [joinpath(outdir,"data-avg-$varname.nc")]
@@ -79,14 +134,8 @@ for varname in  varnames
     fi_err = nomissing(ds[varname * "_error"][:,:,1])
 
   
-    
-    
-
-
 # Plot + validation statistics computation
-    
-    
-    
+      
     n = varname
     cl = quantile(df[:,n],(0.1,0.9))
 
@@ -96,12 +145,17 @@ for varname in  varnames
     subplot(1,3,3); pcolor(xi,yi,fi_err); plmap((0, 0.16)); title("std. err.")
     savefig(joinpath(figdir,"analysis-$n.png"))
 
+    # validate function on the current variable
     summary = validate(n,fi,fi_err)
     @show summary
-    statname = replace(fnames_rec[1],".nc" => ".json")
-    open(statname,"w") do f
-        JSON3.pretty(f,summary; allow_inf = true)
-    end
-end
 
 
+    # Writing results in f "sortieDINCAE"
+    
+    write(f,varname * "\n")
+    JSON3.pretty(f, summary; allow_inf=true)
+    write(f, "\n")
+    
+#    end
+     end # stop writing
+end # close lock
