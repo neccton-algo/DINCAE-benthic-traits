@@ -127,19 +127,30 @@ end
 
 
 # Longitude and latitude of train dataset
-println("salut")
 
 x = df.Longitude[index_train]
 y = df.Latitude[index_train]
 
 
+# Longitude and latitude of validation dataset
+
+x_val = df.Longitude[index_val]
+y_val = df.Latitude[index_val]
+
 
 # Loading traits modalities
 
-#traits_modalities = ["T1.M1","T1.M2","T1.M3","T1.M4","T1.M5"]
-traits_modalities = filter(s -> !isnothing(match(r"T.*\.M.*",s)),String.(propertynames(df)))
+# Only Severine usefull traits
+#n = "T15.M1"
+#traits_modalities = ["T15.M1","T15.M2","T15.M3","T15.M4","T15.M5","T16.M1","T16.M2","T16.M3","T16.M4","T16.M5","T17.M1","T17.M2","T17.M3","T17.M4","T17.M5","T27.M1","T27.M2","T27.M3","T27.M4"]
 
+
+traits_modalities = filter(s -> !isnothing(match(r"T.*\.M.*",s)),String.(propertynames(df)))
 n = "T1.M1"
+
+
+# For Analysis
+
 for n in traits_modalities
     @show n
     @info "processing" n
@@ -162,3 +173,32 @@ for n in traits_modalities
 
     savedata(value,lon,lat,dtime,id,udates,varname,outname)
 end
+
+
+# For validation
+
+for n in traits_modalities
+    @show n
+    @info "processing" n
+    v_val = df[index_val,n]
+
+    lon_val = [x_val]
+    lat_val = [y_val]
+    dtime_val = [fill(DateTime(1,1,1),size(x_val))]
+    value_val = [v_val]
+    id_val = [collect(1:length(v_val))]
+    udates = [DateTime(1,1,1)]
+
+    v_val = df[index_val,n]
+
+    varname = n
+
+    outname = joinpath(basedir,"DINCAE",varname * "_val.nc")
+    @show outname
+    mkpath(dirname(outname))
+
+    savedata(value_val,lon_val,lat_val,dtime_val,id_val,udates,varname,outname)
+end
+
+
+

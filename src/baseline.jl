@@ -113,7 +113,7 @@ v = df[index_train,varname] # 158 valeurs de trainset
 
 
 # DIVAndrun
-cl = quantile(v[:],(0.001,0.95))
+cl = quantile(v[:],(0.001,0.90))
 
 # With anomaly
 vm = mean(v)

@@ -16,6 +16,8 @@ basedir = expanduser("~/Reconstruct_Points/Datasets")
 moddir = expanduser("~/Reconstruct_Points/ModelOut")
 moddirNew = expanduser("~/Reconstruct_Points/ModelNew")
 figdir = expanduser("~/Reconstruct_Points/Datasets/Figures")
+outdir = expanduser("~/Reconstruct_Points/Datasets/Results")
+
 
 datadir = joinpath(basedir,"BenthicData")
 auxdir = joinpath(basedir,"Auxdata_$(1/dlon)")
