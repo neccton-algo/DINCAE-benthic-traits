@@ -9,7 +9,7 @@ DINCAE is intended to be used with a [GPU](https://en.wikipedia.org/wiki/Graphic
 
 ### Primary data source
 
-* Community weighted matrix of traits (Chevalier et al., 2025)
+* Community weighted matrix of traits ([Chevalier et al., 2025](https://doi.org/10.1038/s41597-025-05311-2))
 
 ### Additional data
 * Model output from BAMHBI (POC, sedimentary flux, bottom stress, oxygen content)
