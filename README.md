@@ -7,6 +7,8 @@ DINCAE is intended to be used with a [GPU](https://en.wikipedia.org/wiki/Graphic
 
 ## Data Source
 
+Data can be downloaded via the following link : 
+
 ### Primary data source
 
 * Community weighted matrix of traits ([Chevalier et al., 2025](https://doi.org/10.1038/s41597-025-05311-2))
