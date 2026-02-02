@@ -1,6 +1,5 @@
                                                 # Post-processing for the DINCAE results
 
-
 using CSV
 using DataFrames
 using OceanPlot
@@ -130,16 +129,34 @@ y = df.Latitude[index_train]
 
 #################################
 
-LifeH = ["K","r","A"]
-varname = "K"
-for n in LifeH
+#LifeH = ["K","r","A"]
+#varname = "K"
+
+
+
+# Put to 0 where no oxygen
+
+dsmodel = NCDataset(joinpath(auxdir,"resized_clim_2008_2018.nc"))
+avg_ox = dsmodel["avg_oxygen"][:,:]
+close(dsmodel)
+
+mask = avg_ox .>= 5
+
+
+
+
+
+for varname in varnames
+    n = varname;
     println("$n")
 end
-   
+
+
+
 # Seeking for the varnames in the dataset
 open("sortieDINCAE.txt", "a") do f
 
-for varname in  LifeH
+#for varname in  varnames
     local ds, fnames_rec, v, fi, fi_err, n, cl
 
     @show varname
@@ -150,8 +167,9 @@ for varname in  LifeH
 
     ds = NCDataset(fnames_rec[1])
     fi = nomissing(ds[varname][:,:,1])
+    fi .= fi .*mask
     fi_err = nomissing(ds[varname * "_error"][:,:,1])
-
+    fi_err .= fi_err .*mask
   
 # Plot + validation statistics computation
       
@@ -176,7 +194,7 @@ for varname in  LifeH
     write(f, "\n")
     
     end
-     end # stop writing
+   #  end # stop writing
 #end # close lock
 
 
