@@ -123,7 +123,7 @@ va,s = DIVAndrun(mask,(pm,pn),(xi,yi),(x,y),v_anomaly,len,epsilon2)
 
 va = va .+vm # Add mean to anomaly
 
-fig1 = pcolor(xi,yi,va);plmap(cl);title("Basline DIVAnd_anmoaly for $varname")
+fig1 = pcolor(xi,yi,va);plmap(cl);title("Baseline DIVAnd_anmoaly for $varname")
 
 
 RMS_DIVAnd_anomaly = validateDIVA(va,varname)
