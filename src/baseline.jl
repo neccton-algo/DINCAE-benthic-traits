@@ -117,6 +117,7 @@ v = df[index_train,varname] # 158 valeurs de trainset
 
 # DIVAndrun
 cl = quantile(v[:],(0.001,0.90))
+cl = quantile(v[:],(0.001,0.95))
 
 # With anomaly
 vm = mean(v)
@@ -130,8 +131,8 @@ fig1 = pcolor(xi,yi,va);plmap(cl);title("Baseline DIVAnd_anmoaly for $varname")
 
 
 RMS_DIVAnd_anomaly = validateDIVA(va,varname)
-
-    
+@show RMS_DIVAnd_anomaly
+#=
 # Without anomalies
 vav,s = DIVAndrun(mask,(pm,pn),(xi,yi),(x,y),v,len,epsilon2)
 
@@ -140,7 +141,7 @@ pcolor(xi,yi,vav);plmap(cl);title("Basline DIVAnd for $varname")
 savefig(joinpath(figdir, "DIVAnd-result-$varname.png"))
 
 RMS_DIVAnd = validateDIVA(vav,varname)
-
+=#
 
     
 # Save results
@@ -152,9 +153,8 @@ open("sortieDIVAnd.txt", "a") do f
     JSON3.pretty(f,"RMS_anomaly = $(RMS_DIVAnd_anomaly)"; allow_inf=true)
     write(f, "\n")
     
-    JSON3.pretty(f,"RMS = $(RMS_DIVAnd)"; allow_inf=true)
-
-    write(f, "\n")
+    #JSON3.pretty(f,"RMS = $(RMS_DIVAnd)"; allow_inf=true)
+    #write(f, "\n")
 
 end
     

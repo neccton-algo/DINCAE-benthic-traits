@@ -132,14 +132,15 @@ y = df.Latitude[index_train]
 
 LifeH = ["K","r","A"]
 varname = "K"
+varname = "T1.M1"
 for n in LifeH
     println("$n")
 end
    
 # Seeking for the varnames in the dataset
-open("sortieDINCAE.txt", "a") do f
+open(joinpath(outdir,"sortieDINCAE.txt"), "a") do f
 
-for varname in  LifeH
+for varname in ["T1.M1"]
     local ds, fnames_rec, v, fi, fi_err, n, cl
 
     @show varname
@@ -167,7 +168,6 @@ for varname in  LifeH
     # validate function on the current variable
     summary = validate(n,fi,fi_err,epochs,probability_skip_for_training,learning_rate_decay_epoch,regularization_L2_beta,upsampling_method,learning_rate)
     @show summary
-
 
     # Writing results in f "sortieDINCAE"
     
