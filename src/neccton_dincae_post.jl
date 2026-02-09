@@ -178,8 +178,8 @@ open(joinpath(outdir,"sortieDINCAE.txt"), "a") do f
     @show summary
 
     # apply mask only for the plot
-    fi .= fi .* mask
-    fi_err .= fi_err .* mask
+    fi[.!mask] .= NaN
+    fi_err[.!mask] .= NaN
     
 # Plot + validation statistics computation
     cl = quantile(df[:,n],(0.1,0.9))
