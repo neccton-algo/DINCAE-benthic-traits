@@ -43,6 +43,7 @@ Inside a julia session issue the following commands:
 
 ```julia
 using Pkg
+Pkg.add(url="https://github.com/gher-uliege/OceanPlot.jl",rev="master")
 cd("/path/to/DINCAE-benthic-traits")
 Pkg.activate(".")
 Pkg.instantiate()

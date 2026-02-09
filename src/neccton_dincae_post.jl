@@ -184,5 +184,3 @@ for varname in  LifeH
 
 
 
-using Pkg
-Pkg.add(url="https://github.com/gher-uliege/OceanPlot.jl",rev="master")
