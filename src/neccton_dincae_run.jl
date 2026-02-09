@@ -212,7 +212,6 @@ varnames = replace.(
 #for i in $(seq 118),   ; do sbatch neccton_dincae_run.jl $i 
 # index = 1
 # Index being a number and not a string
-index = randn()
 index = parse(Int,ARGS[1])
 # replace varname by the index of the sbatch
 varname = varnames[index]
