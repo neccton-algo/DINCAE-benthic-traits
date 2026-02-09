@@ -7,9 +7,11 @@ DINCAE is intended to be used with a [GPU](https://en.wikipedia.org/wiki/Graphic
 
 ## Data Source
 
+Data can be downloaded via the following link : https://dox.uliege.be/index.php/s/GdFIXYlmqbxmE9I 
+
 ### Primary data source
 
-* Community weighted matrix of traits (Séverine Chevalier)
+* Community weighted matrix of traits ([Chevalier et al., 2025](https://doi.org/10.1038/s41597-025-05311-2))
 
 ### Additional data
 * Model output from BAMHBI (POC, sedimentary flux, bottom stress, oxygen content)
@@ -41,6 +43,7 @@ Inside a julia session issue the following commands:
 
 ```julia
 using Pkg
+Pkg.add(url="https://github.com/gher-uliege/OceanPlot.jl",rev="master")
 cd("/path/to/DINCAE-benthic-traits")
 Pkg.activate(".")
 Pkg.instantiate()
@@ -57,3 +60,5 @@ The command `Pkg.activate` activates the virtual environement and `Pkg.instantia
 * Barth, A., Alvera-Azcárate, A., Licer, M., & Beckers, J.-M. (2020). DINCAE 1.0: a convolutional neural network with error estimates to reconstruct sea surface temperature satellite observations. Geoscientific Model Development, 13(3), 1609–1622. https://doi.org/10.5194/gmd-13-1609-2020
 
 * Barth, A., Alvera-Azcárate, A., Troupin, C., & Beckers, J.-M. (2022). DINCAE 2.0: multivariate convolutional neural network with error estimates to reconstruct sea surface temperature satellite and altimetry observations. Geoscientific Model Development, 15(5), 2183–2196. https://doi.org/10.5194/gmd-15-2183-2022
+
+* Chevalier, S., Beauchard, O., Teacă, A., Begun, T., Todorova, V., Vandenbulcke, L., Soetaert, K., & Grégoire, M. 2025. A macrozoobenthic data set of the Black Sea northwestern shelf. Scientific Data, 12 (1), 957. https://doi.org/10.1038/s41597-025-05311-2

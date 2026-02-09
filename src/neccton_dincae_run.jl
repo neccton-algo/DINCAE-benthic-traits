@@ -40,13 +40,14 @@ latr = gridlat
 # Modified ones
 
 #epochs = 1000
-epochs = 500
+epochs = 1000
+#epochs = 1500
 
 
 #probability_skip_for_training = 0.6 AllCovar
 probability_skip_for_training = 0.1
 
-learning_rate_decay_epoch = 50
+learning_rate_decay_epoch = 500
 
 regularization_L2_beta = 0
 
@@ -81,6 +82,7 @@ skipconnections = 3:length(enc_nfilter_internal)
 #skipconnections = 3:(length(enc_nfilter_internal)+1)
 
 laplacian_penalty = 0.8f0
+laplacian_penalty = 0.9f0
 
 
 loss_weights_refine = (1,)
@@ -91,9 +93,10 @@ seed = 12345
 
 # Parametrization of parameters that have to be random
 
-learning_rate = Float32(10 ^ (rand(-4..(-3))))
-laplacian_penalty = Float32(10 ^ (rand(-0..1)))
-enc_nfilter_internal = round.(Int,32 * 2 .^ (0:rand(2:5)))
+#learning_rate = Float32(10 ^ (rand(-4..(-3))))
+#laplacian_penalty = Float32(10 ^ (rand(-0..1)))
+#enc_nfilter_internal = round.(Int,32 * 2 .^ (0:rand(2:5)))
+
 #regularization_L2_beta = Float32(10 ^ (rand(-6..(-1))))
 #epochs = rand(300:1500)
 #upsampling_method = rand([:nearest,:bilinear])
@@ -110,31 +113,6 @@ timestamp = Dates.format(Dates.now(),"yyyy-mm-ddTHHMMSS")
 outdir = joinpath(basedir,"Results","DINCAE-$(timestamp)")
 mkpath(outdir)
 paramsname = joinpath(outdir,"params.json")
-
-# Parameter saved in a directory
-
-open(paramsname,"w") do f
-    JSON3.pretty(f,OrderedDict(
-        "laplacian_penalty" => laplacian_penalty,
-        "epochs" => epochs,
-        "batch_size" => batch_size,
-        "enc_nfilter_internal" => enc_nfilter_internal,
-        "clip_grad" => clip_grad,
-        "regularization_L2_beta" => regularization_L2_beta,
-        "ntime_win" => ntime_win,
-        "upsampling_method" => upsampling_method,
-        "loss_weights_refine" => loss_weights_refine,
-        "save_epochs" => save_epochs,
-        "skipconnections" => skipconnections,
-        "dlon" => dlon,
-        "dlat" => dlat,
-        "jitter_std_pos" => jitter_std_pos,
-        "probability_skip_for_training" => probability_skip_for_training,
-        "learning_rate" => learning_rate,
-        "learning_rate_decay_epoch" => learning_rate_decay_epoch,
-        "seed" => seed,
-    ))
-end
 
 
 # Defining the grid based on the resolution
@@ -160,12 +138,11 @@ end
 # load covariables
 
 covars_fname = [
-    (filename = "mean_oxygenbot.nc", varname = "mean_oxygenbot", errvarname = nothing),
-    (filename = "std_oxygenbot.nc",  varname = "std_oxygenbot",  errvarname = nothing),
-    (filename = "mean_DOX.nc",      varname = "mean_dox",      errvarname = nothing),
-    (filename = "std_DOX.nc",       varname = "std_dox",       errvarname = nothing),
-    (filename = "low_DOX.nc",       varname = "low_dox",       errvarname = nothing),
-    
+    # (filename = "mean_oxygenbot.nc", varname = "mean_oxygenbot", errvarname = nothing),
+    # (filename = "std_oxygenbot.nc",  varname = "std_oxygenbot",  errvarname = nothing),
+    # (filename = "mean_DOX.nc",      varname = "mean_dox",      errvarname = nothing),
+    # (filename = "std_DOX.nc",       varname = "std_dox",       errvarname = nothing),
+    # (filename = "low_DOX.nc",       varname = "low_dox",       errvarname = nothing),
     (filename = "resized_clim_2008_2018.nc",       varname = "avg_oxygen",       errvarname = nothing),
     (filename = "resized_clim_2008_2018.nc",       varname = "avg_fCSED",       errvarname = nothing),
     (filename = "resized_clim_2008_2018.nc",       varname = "avg_sCSED",       errvarname = nothing),
@@ -211,7 +188,7 @@ varnames = replace.(
 #for i in $(seq 118),   ; do sbatch neccton_dincae_run.jl $i 
 # index = 1
 # Index being a number and not a string
-#index = randn()
+
 #index = parse(Int,ARGS[1])
 # replace varname by the index of the sbatch
 #varname = varnames[index]
@@ -229,6 +206,33 @@ mkpath(outdir)
     filename = joinpath(basedir,"DINCAE",varname * ".nc")
 
     fnames_rec = [joinpath(outdir,"data-avg-$varname.nc")] # fichier de sauvegarde au sein de rp.
+
+
+# Parameter saved in a directory
+
+open(paramsname,"w") do f
+    JSON3.pretty(f,OrderedDict(
+        "laplacian_penalty" => laplacian_penalty,
+        "epochs" => epochs,
+        "batch_size" => batch_size,
+        "enc_nfilter_internal" => enc_nfilter_internal,
+        "clip_grad" => clip_grad,
+        "regularization_L2_beta" => regularization_L2_beta,
+        "ntime_win" => ntime_win,
+        "upsampling_method" => upsampling_method,
+        "loss_weights_refine" => loss_weights_refine,
+        "save_epochs" => save_epochs,
+        "skipconnections" => skipconnections,
+        "dlon" => dlon,
+        "dlat" => dlat,
+        "jitter_std_pos" => jitter_std_pos,
+        "probability_skip_for_training" => probability_skip_for_training,
+        "learning_rate" => learning_rate,
+        "learning_rate_decay_epoch" => learning_rate_decay_epoch,
+        "covars_fname" => covars_fname,
+        "seed" => seed,
+    ))
+end
 
 
 DINCAE.reconstruct_points(
