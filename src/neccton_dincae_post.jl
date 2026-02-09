@@ -170,13 +170,18 @@ open(joinpath(outdir,"sortieDINCAE.txt"), "a") do f
 
     ds = NCDataset(fnames_rec[1])
     fi = nomissing(ds[varname][:,:,1])
-    fi .= fi .*mask
     fi_err = nomissing(ds[varname * "_error"][:,:,1])
-    fi_err .= fi_err .*mask
-  
-# Plot + validation statistics computation
       
     n = varname
+    # validate function on the current variable
+    summary = validate(n,fi,fi_err,epochs,probability_skip_for_training,learning_rate_decay_epoch,regularization_L2_beta,upsampling_method,learning_rate)
+    @show summary
+
+    # apply mask only for the plot
+    fi .= fi .* mask
+    fi_err .= fi_err .* mask
+    
+# Plot + validation statistics computation
     cl = quantile(df[:,n],(0.1,0.9))
 
     clf();
@@ -185,10 +190,7 @@ open(joinpath(outdir,"sortieDINCAE.txt"), "a") do f
     subplot(1,3,3); pcolor(xi,yi,fi_err); plmap((0, 0.16)); title("std. err.")
     savefig(joinpath(figdir,"analysis-$n.png"))
 
-    # validate function on the current variable
-    summary = validate(n,fi,fi_err,epochs,probability_skip_for_training,learning_rate_decay_epoch,regularization_L2_beta,upsampling_method,learning_rate)
-    @show summary
-
+    
     # Writing results in f "sortieDINCAE"
     
     write(f,varname * "\n")   
