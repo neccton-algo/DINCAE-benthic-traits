@@ -87,10 +87,13 @@ hx, hy, h = DIVAnd.load_bath(bathname, bathisglobal, gridlon, gridlat)
 
 # Parametrization
 
+#=
 len = Float64(12^4)
 epsilon2 = 0.007
+=#
 
-
+len = 80000.0
+epsilon2 = 1.
 
 # Var Definition
 
