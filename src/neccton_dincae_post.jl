@@ -1,4 +1,4 @@
-                                                # Post-processing for the DINCAE results
+# Post-processing for the DINCAE results
 
 using CSV
 using DataFrames
@@ -109,6 +109,8 @@ close(ds)
 x = df.Longitude[index_train]
 y = df.Latitude[index_train]
 
+xval = df.Longitude[index_val]
+yval = df.Latitude[index_val]
 
 
 
@@ -129,13 +131,9 @@ y = df.Latitude[index_train]
 
 #################################
 
+varname = "T1.M1"
+n = varname
 
-#LifeH = ["K","r","A"]
-#varname = "K"
-
-
-
-# Put to 0 where no oxygen
 
 dsmodel = NCDataset(joinpath(auxdir,"resized_clim_2008_2018.nc"))
 avg_ox = dsmodel["avg_oxygen"][:,:]
@@ -144,33 +142,43 @@ close(dsmodel)
 mask = avg_ox .>= 5
 
 
-
-
-
-for varname in varnames
-    n = varname;
-    println("$n")
-end
-
-
-
 # Seeking for the varnames in the dataset
 open(joinpath(outdir,"sortieDINCAE.txt"), "a") do f
 
-
-#for varname in  varnames
+#for varname in ["T1.M1"]
 
     local ds, fnames_rec, v, fi, fi_err, n, cl
 
     @show varname
     
     v = df[index_train,varname]
-
+    vval = df[index_val,varname]
+    
     fnames_rec = [joinpath(outdir,"data-avg-$varname.nc")]
-
     ds = NCDataset(fnames_rec[1])
+
+    # Mean
+    dsanom = NCDataset(
+    joinpath(basedir, "DINCAE-anom",varname*"-anom.nc"),"a")
+
     fi = nomissing(ds[varname][:,:,1])
+    fi = fi .+ dsanom.attrib["mean"]
+    
     fi_err = nomissing(ds[varname * "_error"][:,:,1])
+    fi_err = fi_err .+ dsanom.attrib["mean"]
+    
+
+    close(dsanom)
+
+    n = varname
+    
+    # validate function on the current variable
+    summary = validate(n,fi,fi_err,epochs,probability_skip_for_training,learning_rate_decay_epoch,regularization_L2_beta,upsampling_method,learning_rate)
+    @show summary
+
+    
+# Plot + validation statistics computation
+
       
     n = varname
     # validate function on the current variable
@@ -184,13 +192,16 @@ open(joinpath(outdir,"sortieDINCAE.txt"), "a") do f
 # Plot + validation statistics computation
     cl = quantile(df[:,n],(0.1,0.9))
 
+    fi[.!mask] .= NaN
+    fi_err[.!mask] .= NaN
+    
     clf();
-    subplot(1,3,1); scatter(x,y,10,v); plmap(cl); title("Observation ($n)")
-    subplot(1,3,2); pcolor(xi,yi,fi); plmap(cl); title("Analysis")
-    subplot(1,3,3); pcolor(xi,yi,fi_err); plmap((0, 0.16)); title("std. err.")
+    subplot(1,4,1); scatter(x,y,10,v); plmap(cl); title("Observation ($n)")
+    subplot(1,4,1); scatter(xval,yval,10,vval); plmap(cl); title("Validation ($n)")
+    subplot(1,4,2); pcolor(xi,yi,fi); plmap(cl); title("Analysis")
+    subplot(1,4,3); pcolor(xi,yi,fi_err); plmap((0, 0.16)); title("std. err.")
     savefig(joinpath(figdir,"analysis-$n.png"))
 
-    
     # Writing results in f "sortieDINCAE"
     
     write(f,varname * "\n")   
@@ -198,7 +209,8 @@ open(joinpath(outdir,"sortieDINCAE.txt"), "a") do f
     write(f, "\n")
     
     end
-   #  end # stop writing
+ #    end # stop writing
+
 #end # close lock
 
 

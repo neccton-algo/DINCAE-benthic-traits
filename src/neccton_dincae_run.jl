@@ -13,7 +13,7 @@ using Glob
 using JSON3
 using DataStructures
 using IntervalSets
-
+using Statistics
 
 #include("neccton_dincae_prep.jl")
 include("neccton_common.jl")
@@ -196,6 +196,26 @@ varnames = replace.(
 mkpath(outdir)
 
 
+# Create a new dataset to store anomalies
+cp(joinpath(basedir,"DINCAE",varname * ".nc"),joinpath(basedir, "DINCAE-anom", varname * "-anom.nc"), force=true)
+
+# Open the new dataset
+dsanom = NCDataset(joinpath(basedir, "DINCAE-anom", varname * "-anom.nc"),"a")
+
+# Varname
+T1M1 = dsanom[varname][:]
+
+# Mean of varname
+T1M1mean = mean(T1M1)
+
+# Replace the variable per its anomaly
+dsanom[varname][:] = T1M1 .- T1M1mean
+
+# Create an attrivute with the mean
+dsanom.attrib["mean"] =  T1M1mean
+
+close(dsanom)
+
 
 
 
@@ -203,7 +223,7 @@ mkpath(outdir)
 # DINCAE.reconstruct_points for every variable
 
 #for varname in varnames
-    filename = joinpath(basedir,"DINCAE",varname * ".nc")
+    filename = joinpath(basedir,"DINCAE-anom",varname * "-anom.nc")
 
     fnames_rec = [joinpath(outdir,"data-avg-$varname.nc")] # fichier de sauvegarde au sein de rp.
 
