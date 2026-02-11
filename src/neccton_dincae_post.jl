@@ -196,10 +196,10 @@ open(joinpath(outdir,"sortieDINCAE.txt"), "a") do f
     fi_err[.!mask] .= NaN
     
     clf();
-    subplot(1,4,1); scatter(x,y,10,v); plmap(cl); title("Observation ($n)")
-    subplot(1,4,1); scatter(xval,yval,10,vval); plmap(cl); title("Validation ($n)")
-    subplot(1,4,2); pcolor(xi,yi,fi); plmap(cl); title("Analysis")
-    subplot(1,4,3); pcolor(xi,yi,fi_err); plmap((0, 0.16)); title("std. err.")
+    subplot(1,4,1); scatter(x,y,10,v); plmap(cl); title("Observations")
+    subplot(1,4,2); scatter(xval,yval,10,vval); plmap(cl); title("Validation")
+    subplot(1,4,3); pcolor(xi,yi,fi); plmap(cl); title("Analysis")
+    subplot(1,4,4); pcolor(xi,yi,fi_err); plmap((0, 0.6)); title("std. err.")
     savefig(joinpath(figdir,"analysis-$n.png"))
 
     # Writing results in f "sortieDINCAE"

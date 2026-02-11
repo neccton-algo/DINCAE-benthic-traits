@@ -109,7 +109,16 @@ varnames = replace.(
         ),".nc" => "")
 
 
-for varname in varnames
+
+dsmodel = NCDataset(joinpath(auxdir,"resized_clim_2008_2018.nc"))
+avg_ox = dsmodel["avg_oxygen"][:,:]
+close(dsmodel)
+
+mask = avg_ox .>= 5
+
+
+
+#for varname in varnames
 
 # Train set load
 v = df[index_train,varname] # 158 valeurs de trainset
@@ -127,11 +136,18 @@ va,s = DIVAndrun(mask,(pm,pn),(xi,yi),(x,y),v_anomaly,len,epsilon2)
 
 va = va .+vm # Add mean to anomaly
 
-fig1 = pcolor(xi,yi,va);plmap(cl);title("Baseline DIVAnd_anmoaly for $varname")
-
-
 RMS_DIVAnd_anomaly = validateDIVA(va,varname)
 @show RMS_DIVAnd_anomaly
+
+
+va[.!mask] .= NaN
+    
+    subplot(1,2,1); scatter(x,y,10,v); plmap(cl); title("Observations")
+    subplot(1,2,2); pcolor(xi,yi,va);plmap(cl);title("Baseline DIVAnd for $varname")
+
+    #fig1 = pcolor(xi,yi,va);plmap(cl);title("Baseline DIVAnd_anmoaly for $varname")
+
+
 #=
 # Without anomalies
 vav,s = DIVAndrun(mask,(pm,pn),(xi,yi),(x,y),v,len,epsilon2)
@@ -156,7 +172,7 @@ open("sortieDIVAnd.txt", "a") do f
     #JSON3.pretty(f,"RMS = $(RMS_DIVAnd)"; allow_inf=true)
     #write(f, "\n")
 
-end
+#end
     
 
 
